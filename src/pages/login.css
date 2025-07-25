@@ -600,3 +600,106 @@
     font-size: 0.9rem;
   }
 }
+
+
+/* forgot-password.css */
+
+/* Forgot Password Link Styles */
+.forgot-password-wrapper {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+  margin-bottom: 4px;
+}
+
+.forgot-password-link {
+  color: rgba(245, 158, 11, 0.9);
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  position: relative;
+  padding: 4px 0;
+  border-radius: 4px;
+}
+
+.forgot-password-link::after {
+  content: '';
+  position: absolute;
+  bottom: 2px;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background: linear-gradient(45deg, #f59e0b, #d97706);
+  transition: width 0.3s ease;
+}
+
+.forgot-password-link:hover::after {
+  width: 100%;
+}
+
+.forgot-password-link:hover {
+  color: #f59e0b;
+  transform: translateY(-1px);
+}
+
+.forgot-password-link:active {
+  transform: translateY(0);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .forgot-password-wrapper {
+    justify-content: center;
+    margin-top: 10px;
+  }
+  
+  .forgot-password-link {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .forgot-password-wrapper {
+    margin-top: 12px;
+  }
+  
+  .forgot-password-link {
+    font-size: 0.9rem;
+    padding: 6px 0;
+  }
+}
+
+/* Additional styles for better integration */
+.input-group .forgot-password-wrapper {
+  margin-bottom: 0;
+}
+
+/* Loading state for forgot password link */
+.login-form:has(button:disabled) .forgot-password-link {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* Focus state for accessibility */
+.forgot-password-link:focus {
+  outline: 2px solid rgba(245, 158, 11, 0.5);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Animation for the link appearance */
+.forgot-password-wrapper {
+  animation: fadeInRight 0.4s ease-out 0.2s both;
+}
+
+@keyframes fadeInRight {
+  from {
+    opacity: 0;
+    transform: translateX(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}

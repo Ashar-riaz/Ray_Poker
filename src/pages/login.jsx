@@ -11,7 +11,7 @@ const Login = () => {
   const [errors, setErrors] = useState({});
   const [message, setMessage] = useState({ type: '', text: '' });
 
-  const API_BASE_URL = 'http://127.0.0.1:8000';
+  const API_BASE_URL = 'https://c4512133d352.ngrok-free.app';
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -163,10 +163,13 @@ const Login = () => {
   };
 
   const handleForgotPassword = () => {
+    // Navigate to forgot password page or show modal
     setMessage({ 
       type: 'info', 
       text: 'Password reset functionality will be available soon!' 
     });
+    // You can also navigate to a forgot password page:
+    // navigate('/forgot-password');
   };
 
   return (
@@ -216,18 +219,18 @@ const Login = () => {
               </span>
             </div>
             {errors.password && <span className="error-text">{errors.password}</span>}
+            
+            {/* Forgot Password Link */}
+            <div className="forgot-password-wrapper">
+              <Link 
+                to="/forgot-password" 
+                className="forgot-password-link"
+                onClick={handleForgotPassword}
+              >
+                Forgot Password?
+              </Link>
+            </div>
           </div>
-
-          {/* <div className="forgot-password-link">
-            <button 
-              type="button" 
-              className="forgot-password-btn"
-              onClick={handleForgotPassword}
-              disabled={loading}
-            >
-              Forgot your password?
-            </button>
-          </div> */}
 
           <button type="submit" disabled={loading}>
             {loading ? (
