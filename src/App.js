@@ -3,7 +3,8 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import RayLandingPage from "./RayLandingPage";
 import Login from "./pages/login";
 import Signup from "./pages/signup";
-import ForgotPassword from './pages/ForgotPassword';
+import ForgotPassword from "./pages/ForgotPassword";
+import Dashboard from "./pages/dashboard";
 
 const App = () => {
   return (
@@ -13,7 +14,7 @@ const App = () => {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
-          {/* <Route path="/dashboard" element={<Dashboard />} /> */}
+        <Route path="/dashboard" element={<Dashboard />} />
       </Routes>
     </Router>
   );

@@ -234,7 +234,7 @@ nav a:hover::after {
   z-index: 2;
 }
 
-.primary-btn {
+.primary-btn1 {
   background: linear-gradient(45deg, #1e40af, #3b82f6);
   border: none;
   color: white;
@@ -249,7 +249,7 @@ nav a:hover::after {
   overflow: hidden;
 }
 
-.primary-btn::before {
+.primary-btn1::before {
   content: '';
   position: absolute;
   top: 0;
@@ -260,11 +260,11 @@ nav a:hover::after {
   transition: left 0.5s;
 }
 
-.primary-btn:hover::before {
+.primary-btn1:hover::before {
   left: 100%;
 }
 
-.primary-btn:hover {
+.primary-btn1hover {
   transform: translateY(-3px);
   box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
 }

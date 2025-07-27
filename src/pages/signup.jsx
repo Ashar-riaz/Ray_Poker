@@ -18,7 +18,7 @@ const Signup = () => {
   const [errors, setErrors] = useState({});
   const [message, setMessage] = useState({ type: '', text: '' });
 
-  const API_BASE_URL = 'https://c4512133d352.ngrok-free.app';
+  const API_BASE_URL = 'http://localhost:8000';
 
   const handleChange = (e) => {
     const { name, value } = e.target;
