@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import "./dashboard.css"; // Updated CSS file
-import { FaSignOutAlt, FaHistory, FaPaperPlane, FaRobot, FaUser, FaCopy, FaCheck, FaPlus } from "react-icons/fa";
+import "./dashboard.css";
+import { FaSignOutAlt, FaHistory, FaPaperPlane, FaRobot, FaUser, FaCopy, FaCheck, FaPlus, FaBars, FaTimes } from "react-icons/fa";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -9,11 +9,10 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
   const [errors, setErrors] = useState({});
-  const [response, setResponse] = useState(null);
   const [chatHistory, setChatHistory] = useState([]);
-  const [conversations, setConversations] = useState([]); // Store all conversations
-  const [currentConversationId, setCurrentConversationId] = useState(null); // Track current conversation
-  const [showSidebar, setShowSidebar] = useState(true); // Sidebar visibility
+  const [conversations, setConversations] = useState([]);
+  const [currentConversationId, setCurrentConversationId] = useState(null);
+  const [showSidebar, setShowSidebar] = useState(false); // Changed to false for mobile-first
   const [copiedMessageId, setCopiedMessageId] = useState(null);
   const [isTyping, setIsTyping] = useState(false);
   const textareaRef = useRef(null);
@@ -28,13 +27,13 @@ const Dashboard = () => {
 
   useEffect(() => {
     scrollToBottom();
-  }, [chatHistory, response]);
+  }, [chatHistory, isTyping]);
 
   // Auto-resize textarea
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = textareaRef.current.scrollHeight + 'px';
+      textareaRef.current.style.height = Math.min(textareaRef.current.scrollHeight, 120) + 'px';
     }
   }, [scenario]);
 
@@ -45,7 +44,6 @@ const Dashboard = () => {
       setMessage({ type: "error", text: "Please log in to access the dashboard." });
       setTimeout(() => navigate("/login"), 1500);
     } else {
-      // Start a new conversation on mount
       startNewConversation();
     }
   }, [navigate]);
@@ -64,6 +62,21 @@ const Dashboard = () => {
       return () => clearTimeout(timer);
     }
   }, [message]);
+
+  // Handle window resize for responsive sidebar
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth > 768) {
+        setShowSidebar(true);
+      } else {
+        setShowSidebar(false);
+      }
+    };
+
+    handleResize(); // Set initial state
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const fetchStoredConversations = async () => {
     try {
@@ -89,14 +102,16 @@ const Dashboard = () => {
     }
   };
 
-  // Group questions into conversations (simplified grouping logic)
   const groupQuestionsIntoConversations = (questions) => {
     const convos = [];
     questions.forEach((q, index) => {
       convos.push({
         id: `convo-${index}`,
         title: q.question.length > 50 ? `${q.question.substring(0, 50)}...` : q.question,
-        questions: [q],
+        messages: [
+          { role: "human", content: q.question },
+          { role: "assistant", content: q.answer || "No response available" }
+        ],
         timestamp: q.timestamp,
       });
     });
@@ -106,10 +121,13 @@ const Dashboard = () => {
   const startNewConversation = () => {
     setCurrentConversationId(`convo-${Date.now()}`);
     setChatHistory([]);
-    setResponse(null);
     setScenario("");
     setErrors({});
     setIsTyping(false);
+    // Close sidebar on mobile when starting new conversation
+    if (window.innerWidth <= 768) {
+      setShowSidebar(false);
+    }
   };
 
   const handleScenarioSubmit = async (e) => {
@@ -123,6 +141,12 @@ const Dashboard = () => {
       return;
     }
 
+    const userMessage = { role: "human", content: scenario.trim() };
+    
+    // Add user message to chat immediately and clear input
+    setChatHistory(prev => [...prev, userMessage]);
+    const currentScenario = scenario;
+    setScenario(""); // Clear input immediately
     setLoading(true);
     setIsTyping(true);
 
@@ -134,35 +158,50 @@ const Dashboard = () => {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ scenario: scenario.trim() }),
+        body: JSON.stringify({ scenario: currentScenario }),
       });
 
       if (response.ok) {
         const data = await response.json();
+        
+        // Add AI response to chat
         setTimeout(() => {
           setIsTyping(false);
-          setResponse(data.recommendation);
-          setChatHistory(data.chat_history);
+          setChatHistory(prev => [...prev, { 
+            role: "assistant", 
+            content: data.recommendation || data.response || "No response received"
+          }]);
           setMessage({ type: "success", text: "Analysis complete! 🎯" });
-          setScenario("");
           fetchStoredConversations();
         }, 1000);
+        
       } else {
         const data = await response.json().catch(() => ({}));
         setIsTyping(false);
+        
         if (response.status === 400) {
           setErrors({ scenario: data.detail || "Invalid scenario. Please try again." });
+          setScenario(currentScenario); // Restore input on error
+          setChatHistory(prev => prev.slice(0, -1)); // Remove user message on error
         } else if (response.status === 401) {
           setMessage({ type: "error", text: "Session expired. Please log in again." });
           setTimeout(() => navigate("/login"), 1500);
         } else {
           setMessage({ type: "error", text: data.detail || "Failed to analyze scenario." });
+          setChatHistory(prev => [...prev, { 
+            role: "assistant", 
+            content: "Sorry, I encountered an error while processing your request."
+          }]);
         }
       }
     } catch (error) {
       console.error("Analyze scenario error:", error);
       setIsTyping(false);
       setMessage({ type: "error", text: "Network error. Please check your connection." });
+      setChatHistory(prev => [...prev, { 
+        role: "assistant", 
+        content: "Network error occurred. Please try again."
+      }]);
     } finally {
       setLoading(false);
     }
@@ -193,19 +232,19 @@ const Dashboard = () => {
   };
 
   const toggleSidebar = () => {
-    setShowSidebar((prev) => !prev);
+    setShowSidebar(prev => !prev);
   };
 
   const selectConversation = (convoId) => {
     const selectedConvo = conversations.find((c) => c.id === convoId);
     if (selectedConvo) {
       setCurrentConversationId(convoId);
-      setChatHistory(selectedConvo.questions.map((q) => ({
-        role: "human",
-        content: q.question,
-      })));
-      setResponse(selectedConvo.questions[0]?.answer || null);
+      setChatHistory(selectedConvo.messages || []);
       setScenario("");
+    }
+    // Close sidebar on mobile after selection
+    if (window.innerWidth <= 768) {
+      setShowSidebar(false);
     }
   };
 
@@ -224,18 +263,31 @@ const Dashboard = () => {
   );
 
   return (
-    <div className="dashboard-page-wrapper min-h-screen flex bg-gradient-to-br from-gray-900 via-slate-800 to-slate-700">
+    <div className="dashboard-page-wrapper">
+      {/* Overlay for mobile sidebar */}
+      {showSidebar && window.innerWidth <= 768 && (
+        <div className="sidebar-overlay" onClick={() => setShowSidebar(false)} />
+      )}
+      
       <div className={`sidebar ${showSidebar ? 'open' : 'closed'}`}>
         <div className="sidebar-header">
-          <h2 className="sidebar-title">Conversations</h2>
+          <div className="sidebar-header-top">
+            <h2 className="sidebar-title">Conversations</h2>
+            <button
+              onClick={toggleSidebar}
+              className="sidebar-close-btn"
+            >
+              <FaTimes />
+            </button>
+          </div>
           <button
             onClick={startNewConversation}
             className="new-conversation-btn"
-            data-tooltip="Start a new conversation"
           >
             <FaPlus /> New Conversation
           </button>
         </div>
+        
         <div className="conversations-list">
           {conversations.length > 0 ? (
             conversations.map((convo) => (
@@ -243,7 +295,6 @@ const Dashboard = () => {
                 key={convo.id}
                 className={`conversation-item ${currentConversationId === convo.id ? 'active' : ''}`}
                 onClick={() => selectConversation(convo.id)}
-                data-tooltip={convo.title}
               >
                 <div className="conversation-title">{convo.title}</div>
                 <div className="conversation-timestamp">
@@ -263,44 +314,42 @@ const Dashboard = () => {
           )}
         </div>
       </div>
-      <div className="main-container">
+
+      <div className={`main-container ${showSidebar ? 'sidebar-open' : 'sidebar-closed'}`}>
         <header>
           <div className="header-brand">
-            <div className="logo-icon">R</div>
-            <h1 className="brand-title">Ray Dashboard</h1>
             <button
               onClick={toggleSidebar}
               className="sidebar-toggle"
-              data-tooltip={showSidebar ? "Hide sidebar" : "Show sidebar"}
             >
-              <FaHistory />
+              <FaBars />
             </button>
+            <div className="logo-icon">R</div>
+            <h1 className="brand-title">Ray Dashboard</h1>
           </div>
           <button
             onClick={handleLogout}
             className="logout-btn"
-            data-tooltip="Sign out of your account"
           >
             <FaSignOutAlt />
-            <span className="hidden sm:inline">Log Out</span>
+            <span className="logout-text">Log Out</span>
           </button>
         </header>
 
         {message.text && (
-          <div className={`message ${message.type} ${message.type === 'success' ? 'success-bounce' : message.type === 'error' ? 'error-shake' : ''}`}>
+          <div className={`message ${message.type}`}>
             {message.text}
           </div>
         )}
 
         <div className="chat-container">
           <div className="chat-area">
-            {(chatHistory.length > 0 || response || isTyping) && (
+            {(chatHistory.length > 0 || isTyping) ? (
               <div className="chat-messages">
                 {chatHistory.map((msg, index) => (
                   <div
                     key={index}
-                    className={`chat-message ${msg.role === "human" ? "human" : "ai"} fade-in`}
-                    style={{ animationDelay: `${index * 0.1}s` }}
+                    className={`chat-message ${msg.role === "human" ? "human" : "ai"}`}
                   >
                     <div className="message-author">
                       {msg.role === "human" ? (
@@ -316,8 +365,7 @@ const Dashboard = () => {
                       )}
                       <button
                         onClick={() => copyToClipboard(msg.content, `${msg.role}-${index}`)}
-                        className="ml-auto text-xs opacity-60 hover:opacity-100 transition-opacity"
-                        data-tooltip="Copy message"
+                        className="copy-btn"
                       >
                         {copiedMessageId === `${msg.role}-${index}` ? <FaCheck /> : <FaCopy />}
                       </button>
@@ -326,26 +374,19 @@ const Dashboard = () => {
                   </div>
                 ))}
                 {isTyping && <TypingIndicator />}
-                {response && !isTyping && (
-                  <div className="chat-message ai slide-up">
-                    <div className="message-author">
-                      <FaRobot className="inline mr-2" />
-                      Ray
-                      <button
-                        onClick={() => copyToClipboard(response, 'latest-response')}
-                        className="ml-auto text-xs opacity-60 hover:opacity-100 transition-opacity"
-                        data-tooltip="Copy analysis"
-                      >
-                        {copiedMessageId === 'latest-response' ? <FaCheck /> : <FaCopy />}
-                      </button>
-                    </div>
-                    <div className="message-content">{response}</div>
-                  </div>
-                )}
                 <div ref={messagesEndRef} />
+              </div>
+            ) : (
+              <div className="welcome-message">
+                <div className="welcome-icon">
+                  <FaRobot />
+                </div>
+                <h2>Welcome to Ray Dashboard</h2>
+                <p>I'm Ray, your poker analysis assistant. Describe any poker situation and I'll help you make the best decision.</p>
               </div>
             )}
           </div>
+          
           <form onSubmit={handleScenarioSubmit} className="scenario-form">
             <div className="input-group">
               <textarea
@@ -359,7 +400,7 @@ const Dashboard = () => {
                 onKeyDown={handleKeyPress}
                 className={`scenario-textarea ${errors.scenario ? 'error' : ''}`}
                 disabled={loading}
-                rows={3}
+                rows={1}
               />
               {errors.scenario && (
                 <div className="error-text">{errors.scenario}</div>
@@ -373,12 +414,12 @@ const Dashboard = () => {
               {loading ? (
                 <div className="loading-content">
                   <div className="spinner"></div>
-                  <span>Analyzing...</span>
+                  <span className="loading-text">Analyzing...</span>
                 </div>
               ) : (
-                <div className="flex items-center justify-center gap-2">
+                <div className="submit-content">
                   <FaPaperPlane />
-                  <span>Send</span>
+                  <span className="submit-text">Send</span>
                 </div>
               )}
             </button>
