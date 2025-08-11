@@ -19,7 +19,7 @@ const Signup = () => {
   const [errors, setErrors] = useState({});
   const [message, setMessage] = useState({ type: "", text: "" });
 
-  const API_BASE_URL = "http://localhost:8000";
+  const API_BASE_URL = "https://ray-backend-3rxqe.ondigitalocean.app/";
 
   const handleChange = (e) => {
     const { name, value } = e.target;

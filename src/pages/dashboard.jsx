@@ -19,7 +19,7 @@ const Dashboard = () => {
   const messagesEndRef = useRef(null);
 
   const [conversationStorage, setConversationStorage] = useState({});
-  const API_BASE_URL = "http://localhost:8000";
+  const API_BASE_URL = "https://ray-backend-3rxqe.ondigitalocean.app/";
 
   const saveCurrentConversation = () => {
     if (currentConversationId && chatHistory.length > 0) {

@@ -23,7 +23,7 @@ const ForgotPassword = () => {
   });
   const [errors, setErrors] = useState({});
 
-  const API_BASE_URL = 'http://localhost:8000';
+  const API_BASE_URL = 'https://ray-backend-3rxqe.ondigitalocean.app/';
 
   // Countdown timer for resend code
   useEffect(() => {
