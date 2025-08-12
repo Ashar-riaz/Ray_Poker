@@ -19,7 +19,7 @@ const Dashboard = () => {
   const messagesEndRef = useRef(null);
 
   const [conversationStorage, setConversationStorage] = useState({});
-  const API_BASE_URL = "http://157.230.170.41:8000";
+  const API_BASE_URL = "https://ray-backend-rpzzw.ondigitalocean.app";
 
   const saveCurrentConversation = () => {
     if (currentConversationId && chatHistory.length > 0) {

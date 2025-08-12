@@ -19,7 +19,7 @@ const Signup = () => {
   const [errors, setErrors] = useState({});
   const [message, setMessage] = useState({ type: "", text: "" });
 
-  const API_BASE_URL = "http://157.230.170.41:8000";
+  const API_BASE_URL = "https://ray-backend-rpzzw.ondigitalocean.app";
 
   const handleChange = (e) => {
     const { name, value } = e.target;
