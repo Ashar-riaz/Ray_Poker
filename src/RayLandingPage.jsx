@@ -28,10 +28,10 @@ const RayLandingPage = () => {
           <h1>Play Poker<br />with Ray</h1>
           <p>Your AI poker coach that<br />reads the game like a pro.</p>
 
-          <div className="hero-actions">
+          {/* <div className="hero-actions">
             <button className="primary-btn1">ATTACH</button>
             <button className="secondary-btn">Refer</button>
-          </div>
+          </div> */}
 
           <div className="ask-ray">
             <input type="text" placeholder="Ask Ray about..." />
