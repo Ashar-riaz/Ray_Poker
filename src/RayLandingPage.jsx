@@ -3,7 +3,6 @@ import "./RayLandingPage.css";
 import landingImg from './assets/landing_img.png';
 import { Link } from "react-router-dom";
 
-
 const RayLandingPage = () => {
   return (
     <div className="container">
@@ -18,7 +17,7 @@ const RayLandingPage = () => {
           <a href="#about">About</a> */}
         </nav>
         <div className="header-actions">
-          <Link to="/login" className="login-btn"style={{ textDecoration: "none" }}>Log in</Link>
+          <Link to="/login" className="login-btn" style={{ textDecoration: "none" }}>Log in</Link>
           <Link to="/signup" className="signup-btn" style={{ textDecoration: "none" }}>Get Started</Link>
         </div>
       </header>
@@ -35,7 +34,9 @@ const RayLandingPage = () => {
 
           <div className="ask-ray">
             <input type="text" placeholder="Ask Ray about..." />
-            <button>Ask</button>
+            <Link to="/login">
+              <button>Ask</button>
+            </Link>
           </div>
         </div>
 
