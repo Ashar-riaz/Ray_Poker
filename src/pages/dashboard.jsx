@@ -281,11 +281,38 @@ const Dashboard = () => {
     }
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    // Remove tokens from localStorage
     localStorage.removeItem("access_token");
     localStorage.removeItem("token_type");
+
+    // Optional: Revoke Google token (if you have the Google access token)
+    const googleToken = localStorage.getItem("google_access_token"); // Assuming you store this separately
+    if (googleToken) {
+      try {
+        await fetch("https://oauth2.googleapis.com/revoke", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+          body: `token=${googleToken}`,
+        });
+      } catch (error) {
+        console.error("Failed to revoke Google token:", error);
+      }
+    }
+
+    // Clear any additional local state if needed
+    setChatHistory([]);
+    setCurrentConversationId(null);
+    setConversations([]);
+    setConversationStorage({});
+
+    // Redirect to login page and force a full page refresh
     setMessage({ type: "success", text: "Logged out successfully! 👋" });
-    setTimeout(() => navigate("/login"), 1500);
+    setTimeout(() => {
+      window.location.href = "/login"; // Use window.location.href for a hard refresh
+    }, 1500);
   };
 
   const toggleSidebar = () => {

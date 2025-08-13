@@ -259,7 +259,7 @@ const Login = () => {
               </div>
               {errors.password && <span className="error-text">{errors.password}</span>}
 
-              <div className="forgot-password-wrapper">
+              {/* <div className="forgot-password-wrapper">
                 <Link
                   to="/forgot-password"
                   className="forgot-password-link"
@@ -267,7 +267,7 @@ const Login = () => {
                 >
                   Forgot Password?
                 </Link>
-              </div>
+              </div> */}
             </div>
 
             <button type="submit" disabled={loading}>
